@@ -46,7 +46,7 @@ func ttfFontFile(xRefTable *XRefTable, ttf font.TTFLight, fontName string) (*Ind
 }
 
 func ttfSubFontFile(xRefTable *XRefTable, ttf font.TTFLight, fontName string) (*IndirectRef, error) {
-	bb, err := font.Subset(fontName, ttf.UsedGIDs)
+	bb, err := font.Subset(fontName, ttf.UsedGIDs, ConfigPath)
 	if err != nil {
 		return nil, err
 	}

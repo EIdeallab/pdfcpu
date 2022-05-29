@@ -495,6 +495,9 @@ func parseName(line *string) (*Name, error) {
 
 func processDictKeys(line *string, relaxed bool) (Dict, error) {
 	l := *line
+	if strings.Contains(l, "https://www.startup-plus.kr") {
+		log.Parse.Printf("")
+	}
 	var eol bool
 	d := NewDict()
 	for !strings.HasPrefix(l, ">>") {

@@ -1001,8 +1001,16 @@ func createTTF(header []byte, tables map[string]*table) ([]byte, error) {
 }
 
 // Subset creates a new font file based on usedGIDs.
-func Subset(fontName string, usedGIDs map[uint16]bool) ([]byte, error) {
-	bb, err := Read(fontName)
+func Subset(fontName string, usedGIDs map[uint16]bool, ConfigPath string) ([]byte, error) {
+	var bb []byte 
+	var err error
+
+	if ConfigPath != "disable" {
+		bb, err = Read(fontName)
+	} else {
+		bb, err = ReadEmbeded(fontName)
+	}
+
 	if err != nil {
 		return nil, err
 	}

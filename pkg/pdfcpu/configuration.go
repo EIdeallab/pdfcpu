@@ -175,7 +175,7 @@ type Configuration struct {
 // Other possible values:
 // 	default:	Ensure config dir at default location
 // 	disable:	Disable config dir usage
-var ConfigPath string = "default"
+var ConfigPath string = "disable"
 
 var loadedDefaultConfig *Configuration
 
@@ -247,6 +247,8 @@ func NewDefaultConfiguration() *Configuration {
 		}
 		fmt.Fprintf(os.Stderr, "pdfcpu: config dir problem: %v\n", err)
 		os.Exit(1)
+	} else {
+		font.LoadDefaultUserFonts()
 	}
 	// Bypass config.yml
 	return newDefaultConfiguration()

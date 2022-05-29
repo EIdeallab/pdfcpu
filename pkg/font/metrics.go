@@ -17,6 +17,7 @@ limitations under the License.
 package font
 
 import (
+	"embed"
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
@@ -30,6 +31,9 @@ import (
 	"github.com/pdfcpu/pdfcpu/internal/corefont/metrics"
 	"github.com/pdfcpu/pdfcpu/pkg/types"
 )
+
+//go:embed gob/MalgunGothicRegular.gob
+var fs embed.FS
 
 // TTFLight represents a TrueType font w/o font file.
 type TTFLight struct {
@@ -107,6 +111,18 @@ var UserFontDir string
 // UserFontMetrics represents font metrics for TTF or OTF font files installed into UserFontDir.
 var UserFontMetrics = map[string]TTFLight{}
 
+func loadEmbeded(fileName string, fd *TTFLight) error {
+	fmt.Printf("reading gob from: %s\n", fileName)
+
+	f, err := fs.Open(fileName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	dec := gob.NewDecoder(f)
+	return dec.Decode(fd)
+}
+
 func load(fileName string, fd *TTFLight) error {
 	//fmt.Printf("reading gob from: %s\n", fileName)
 	f, err := os.Open(fileName)
@@ -122,6 +138,20 @@ func load(fileName string, fd *TTFLight) error {
 func Read(fileName string) ([]byte, error) {
 	fn := filepath.Join(UserFontDir, fileName+".gob")
 	f, err := os.Open(fn)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	dec := gob.NewDecoder(f)
+	ff := &struct{ FontFile []byte }{}
+	err = dec.Decode(ff)
+	return ff.FontFile, err
+}
+
+// Read reads in the font file bytes from gob
+func ReadEmbeded(fileName string) ([]byte, error) {
+	fn := filepath.Join("ttf", fileName+".gob")
+	f, err := fs.Open(fn)
 	if err != nil {
 		return nil, err
 	}
@@ -158,6 +188,23 @@ func LoadUserFonts() error {
 		//fmt.Printf("Loaded %s:\n%s", fn, ttf)
 		UserFontMetrics[fn] = ttf
 	}
+	return nil
+}
+
+// LoadDefaultUserFonts loads default unicode TTF font file from /fonts.
+func LoadDefaultUserFonts() error {
+	fn := "MalgunGothicRegular.gob";
+
+	ttf := TTFLight{}
+	ttf.UsedGIDs = map[uint16]bool{}
+
+	pn := filepath.Join("gob/", fn)
+	if err := loadEmbeded(pn, &ttf); err != nil {
+		return err
+	}
+	fn = strings.TrimSuffix(fn, path.Ext(fn))
+	UserFontMetrics[fn] = ttf
+
 	return nil
 }
 
