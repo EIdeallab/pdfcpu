@@ -202,6 +202,21 @@ func balancedParenthesesPrefix(s string) int {
 	return -1
 }
 
+// Remove any unnecessary text from the terminated string. This is non-standard.
+func forwardParseBufUntilNxtCmd(buf string) string {
+	for i := 1; i < len(buf); i++ {
+		if buf[i] == '/' || 
+			buf[i] == '\t' ||
+			buf[i] == '\r' ||
+			buf[i] == '\n' ||
+			buf[i] == '>' ||
+			buf[i] == ' ' {
+			return buf[i:];
+		}
+	}
+	return ""
+}
+
 func forwardParseBuf(buf string, pos int) string {
 	if pos < len(buf) {
 		return buf[pos:]
@@ -389,8 +404,12 @@ func parseStringLiteral(line *string) (Object, error) {
 	// Parse string literal, see 7.3.4.2
 	//str := stringLiteral(balParStr)
 
+	// for In real String objects, there are cases where parentheses prefixes are not balanced. 
+	// so remove unnecessary string object until literal ends
+
 	// position behind ')'
-	*line = forwardParseBuf(l[i:], 1)
+	// *line = forwardParseBuf(l[i:], 1)
+	*line = forwardParseBufUntilNxtCmd(l[i:])
 
 	stringLiteral := StringLiteral(balParStr)
 	log.Parse.Printf("parseStringLiteral: end <%s>\n", stringLiteral)
